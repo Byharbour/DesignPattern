@@ -31,6 +31,7 @@
 		39E60ED71270DE5000AC0D02 /* cppcheckexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60ED11270DE5000AC0D02 /* cppcheckexecutor.cpp */; };
 		39E60ED81270DE5000AC0D02 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60ED31270DE5000AC0D02 /* main.cpp */; };
 		39E60ED91270DE5000AC0D02 /* threadexecutor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 39E60ED41270DE5000AC0D02 /* threadexecutor.cpp */; };
+		BCDC76131CACC36200D6D124 /* checkconstnumber.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BCDC76111CACC36200D6D124 /* checkconstnumber.cpp */; };
 		F4043DB1177F08A800CD5A40 /* filelister.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DAD177F08A800CD5A40 /* filelister.cpp */; };
 		F4043DB2177F08A800CD5A40 /* pathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DAF177F08A800CD5A40 /* pathmatch.cpp */; };
 		F4043DD7177F093300CD5A40 /* check64bit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4043DB3177F093300CD5A40 /* check64bit.cpp */; };
@@ -221,6 +222,8 @@
 		39E60ED41270DE5000AC0D02 /* threadexecutor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = threadexecutor.cpp; path = cli/threadexecutor.cpp; sourceTree = "<group>"; };
 		39E60ED51270DE5000AC0D02 /* threadexecutor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = threadexecutor.h; path = cli/threadexecutor.h; sourceTree = "<group>"; };
 		39E60EDE1270DEB100AC0D02 /* cppcheck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cppcheck; sourceTree = BUILT_PRODUCTS_DIR; };
+		BCDC76111CACC36200D6D124 /* checkconstnumber.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = checkconstnumber.cpp; path = lib/checkconstnumber.cpp; sourceTree = "<group>"; };
+		BCDC76121CACC36200D6D124 /* checkconstnumber.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = checkconstnumber.hpp; path = lib/checkconstnumber.hpp; sourceTree = "<group>"; };
 		F4043DAD177F08A800CD5A40 /* filelister.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = filelister.cpp; path = cli/filelister.cpp; sourceTree = "<group>"; };
 		F4043DAE177F08A800CD5A40 /* filelister.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = filelister.h; path = cli/filelister.h; sourceTree = "<group>"; };
 		F4043DAF177F08A800CD5A40 /* pathmatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pathmatch.cpp; path = cli/pathmatch.cpp; sourceTree = "<group>"; };
@@ -489,6 +492,8 @@
 				F4043DD4177F093300CD5A40 /* tokenlist.cpp */,
 				F4043DD5177F093300CD5A40 /* tokenlist.h */,
 				F4043DD6177F093300CD5A40 /* version.h */,
+				BCDC76111CACC36200D6D124 /* checkconstnumber.cpp */,
+				BCDC76121CACC36200D6D124 /* checkconstnumber.hpp */,
 			);
 			name = Library;
 			sourceTree = "<group>";
@@ -676,6 +681,7 @@
 				39E60EC41270DE3A00AC0D02 /* errorlogger.cpp in Sources */,
 				39E60EC51270DE3A00AC0D02 /* executionpath.cpp in Sources */,
 				F497C28C1AB41D5C003B96CF /* check.cpp in Sources */,
+				BCDC76131CACC36200D6D124 /* checkconstnumber.cpp in Sources */,
 				F497C28D1AB41D5C003B96CF /* checkcondition.cpp in Sources */,
 				39E60EC81270DE3A00AC0D02 /* mathlib.cpp in Sources */,
 				39E60EC91270DE3A00AC0D02 /* path.cpp in Sources */,
