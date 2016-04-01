@@ -172,6 +172,17 @@ public slots:
     */
     void ShowAuthors();
 
+
+    /*********************************
+     * Writed by Matt to add Export
+     * TODO
+     ********************************/
+    /**
+    * @brief Slot to Export setting files
+    *
+    */
+    void Export();
+
     /**
     * @brief Slot to stop processing files
     *

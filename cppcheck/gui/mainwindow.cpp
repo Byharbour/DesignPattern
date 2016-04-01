@@ -26,6 +26,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QFile>
+#include <QProcess>
 #include "mainwindow.h"
 #include "cppcheck.h"
 #include "applicationlist.h"
@@ -103,6 +104,13 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI.mActionLibraryEditor, SIGNAL(triggered()), this, SLOT(ShowLibraryEditor()));
 
     connect(mUI.mActionRecheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
+
+    /*********************************
+     * Writed by Matt to add Export
+     * TODO
+     ********************************/
+
+    connect(mUI.mActionExportSetting, SIGNAL(triggered()), this, SLOT(Export()));
 
     connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(StopChecking()));
     connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
@@ -943,6 +951,72 @@ void MainWindow::ShowAuthors()
     FileViewDialog *dlg = new FileViewDialog(":AUTHORS", tr("Authors"), this);
     dlg->resize(350, 400);
     dlg->exec();
+}
+
+/*********************************
+ * Writed by Matt to add Export
+ * TODO
+ ********************************/
+
+void MainWindow::Export()
+{
+    SaveSettings();
+
+    QString selectedFilter;
+    const QString filter(tr("Linux,MacOS setting file (*.conf);;Windows setting file (*.ini)"));
+    QString selectedFile = QFileDialog::getSaveFileName(this,
+                           tr("Save the setting file"),
+                           GetPath(SETTINGS_LAST_RESULT_PATH),
+                           filter,
+                           &selectedFilter);
+
+    if (!selectedFile.isEmpty()) {
+        if (selectedFilter == tr("Linux,MacOS setting file (*.conf)")) {
+            if (!selectedFile.endsWith(".conf", Qt::CaseInsensitive))
+                selectedFile += ".conf";
+        } else if (selectedFilter == tr("Windows setting file (*.ini)")) {
+            if (!selectedFile.endsWith(".ini", Qt::CaseInsensitive))
+                selectedFile += ".ini";
+        }
+    }
+
+    /*****************************
+     * get local setting PATH_MAX
+    ******************************/
+
+#if defined(_WIN32)
+    QString srcSettingFile = "%APPDATA%\\Cppcheck\\Cppcheck-GUI.ini";
+#else
+    QStringList environment = QProcess::systemEnvironment();
+    QString str;
+    foreach(str,environment)
+    {
+        if (str.startsWith("HOME="))
+        {
+            str=str.mid(5);
+            break;
+        }
+    }
+    QString srcSettingFile = str + "/.config/Cppcheck/Cppcheck-GUI.conf";
+#endif
+
+
+    if(!QFile::exists(srcSettingFile)){
+        qDebug()<<srcSettingFile;
+        return;
+    }
+
+    std::printf("succeed to find srcSettingFile!\n");
+
+    QDir *toDir = new QDir();
+    bool exist = toDir->exists(selectedFile);
+
+    if(exist){
+        toDir->remove(selectedFile);
+    }
+
+    QFile::copy(srcSettingFile,selectedFile);
+
 }
 
 void MainWindow::Save()
