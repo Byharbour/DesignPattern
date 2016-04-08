@@ -27,6 +27,7 @@
 #include <QActionGroup>
 #include <QFile>
 #include <QProcess>
+#include <QThread>
 #include "mainwindow.h"
 #include "cppcheck.h"
 #include "applicationlist.h"
@@ -107,10 +108,17 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     /*********************************
      * Writed by Matt to add Export
-     * TODO
+     * Begin
      ********************************/
 
     connect(mUI.mActionExportSetting, SIGNAL(triggered()), this, SLOT(Export()));
+
+    /*********************************
+     * Writed by Matt to add Import
+     * Begin
+     ********************************/
+
+    connect(mUI.mActionImportSetting, SIGNAL(triggered()), this, SLOT(Import()));
 
     connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(StopChecking()));
     connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
@@ -954,8 +962,89 @@ void MainWindow::ShowAuthors()
 }
 
 /*********************************
+ * Writed by Matt to add Import
+ * Todo
+ ********************************/
+
+void MainWindow::Import()
+{
+
+    // get local setting PATH_MAX
+#if defined(_WIN32)
+    QString dstSettingFile = "%APPDATA%\\Cppcheck\\Cppcheck-GUI.ini";
+    QString backupSettingFile = "%APPDATA%\\Cppcheck\\Cppcheck-GUI-bakeup.ini";
+#else
+    QStringList environment = QProcess::systemEnvironment();
+    QString str;
+    foreach(str,environment)
+    {
+        if (str.startsWith("HOME="))
+        {
+            str=str.mid(5);
+            break;
+        }
+    }
+    QString dstSettingFile = str + "/.config/Cppcheck/Cppcheck-GUI.conf";
+    QString backupSettingFile = str + "/.config/Cppcheck/Cppcheck-GUI-bakeup.conf";
+#endif
+
+    const QString lastPath = mSettings->value(SETTINGS_LAST_PROJECT_PATH, QString()).toString();
+    const QString filter = tr("Linux/MacOs Setting files (*.conf);;Windows Setting files (*.ini);;All files(*.*)");
+    const QString filepath = QFileDialog::getOpenFileName(this,
+                             tr("Select Setting File"),
+                             GetPath(SETTINGS_LAST_PROJECT_PATH),
+                             filter);
+
+    if (!filepath.isEmpty()) {
+        const QFileInfo fi(filepath);
+        if (fi.exists() && fi.isFile() && fi.isReadable()) {
+            SetPath(SETTINGS_LAST_PROJECT_PATH, filepath);
+
+            qDebug()<<"Succeed to find filepath!";
+            qDebug()<<filepath;
+
+            // copy file to local setting file
+
+            QDir *toDir = new QDir();
+            bool exist = toDir->exists(backupSettingFile);
+
+            if(exist){
+                toDir->remove(backupSettingFile);
+            }
+
+            QFile::copy(dstSettingFile,backupSettingFile);
+
+
+            exist = toDir->exists(dstSettingFile);
+
+            if(exist){
+                toDir->remove(dstSettingFile);
+            }
+
+            QFile::copy(filepath,dstSettingFile);
+
+            //mSettings = new QSettings(filepath,QSettings::IniFormat,0);
+
+            QProcess::startDetached(qApp->applicationFilePath(), QStringList());
+
+            QThread::sleep(1);
+
+            qApp->quit();
+
+
+        }
+    }
+}
+
+
+/*********************************
+ * Writed by Matt to add Import
+ * End
+ ********************************/
+
+/*********************************
  * Writed by Matt to add Export
- * TODO
+ * Begin
  ********************************/
 
 void MainWindow::Export()
@@ -1018,6 +1107,11 @@ void MainWindow::Export()
     QFile::copy(srcSettingFile,selectedFile);
 
 }
+
+/*********************************
+ * Writed by Matt to add Export
+ * End
+ ********************************/
 
 void MainWindow::Save()
 {
