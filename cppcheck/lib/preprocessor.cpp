@@ -32,6 +32,7 @@
 #include <vector>
 #include <set>
 #include <stack>
+#include <iostream>
 
 bool Preprocessor::missingIncludeFlag;
 bool Preprocessor::missingSystemIncludeFlag;
@@ -166,6 +167,20 @@ static std::map<std::string,std::string> getcfgmap(const std::string &cfg, const
 
     return cfgmap;
 }
+void Preprocessor::checkCodeBefore(const std::string &code)
+{
+	std::ostringstream ret;
+	std::istringstream istr(code);
+	std::string line;
+	//removeComments()
+	unsigned int flag = 0;
+	std::getline(istr, line);
+	if (line.compare(0, 9, "#include ") == 0)  //wrong
+	{
+		//error;
+		std::cout << "wrongwrongwrong" << "\n";
+	}
+}
 
 
 /** Just read the code into a string. Perform simple cleanup of the code */
@@ -250,6 +265,10 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     if (_settings.terminated())
         return "";
     code.str("");
+
+
+	//beforeinclude
+	checkCodeBefore(result);
 
     // ------------------------------------------------------------------------------------------
     //
@@ -632,8 +651,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 // add a suppression if the next token is 'case' or 'default'
                 if (detectFallThroughComments && fallThroughComment) {
                     const std::string::size_type j = str.find_first_not_of("abcdefghijklmnopqrstuvwxyz", i);
-                    const std::string tok = str.substr(i, j - i);
-                    if (tok == "case" || tok == "default")
+                    if (str.compare(i, j-i, "case") == 0 || str.compare(i, j-i, "default") == 0)
                         suppressionIDs.push_back("switchCaseFallThrough");
                     fallThroughComment = false;
                 }
@@ -662,8 +680,12 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
                 }
             }
 
+            // C++14 digit separators
+            if (ch == '\'' && std::isxdigit(previous))
+                ; // Just skip it.
+
             // String or char constants..
-            if (ch == '\"' || ch == '\'') {
+            else if (ch == '\"' || ch == '\'') {
                 code << char(ch);
                 char chNext;
                 do {
@@ -1062,13 +1084,15 @@ void Preprocessor::handleUndef(std::list<std::string> &configurations) const
                 else if (cfg->compare(0,it->length(),*it)==0 && cfg->find_first_of(";=") == it->length())
                     undef = true;
                 else if (cfg->find(";" + *it) == std::string::npos)
-                    ;
+                    continue;
                 else if (cfg->find(";" + *it + ";") != std::string::npos)
                     undef = true;
                 else if (cfg->find(";" + *it + "=") != std::string::npos)
                     undef = true;
                 else if (cfg->find(";" + *it) + it->size() + 1U == cfg->size())
                     undef = true;
+                if (undef)
+                    break;
             }
 
             if (undef)
@@ -1961,9 +1985,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = linenr;
-        loc.setfile(filename);
+        ErrorLogger::ErrorMessage::FileLocation loc(filename, linenr);
         locationList.push_back(loc);
     }
     _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
@@ -2266,9 +2288,10 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
     while ((pos = code.find("#include", pos)) != std::string::npos) {
         if (_settings.terminated())
             return;
-
+		//std::cout << "wrongwrongwrong" << "\n";
         // Accept only includes that are at the start of a line
         if (pos > 0 && code[pos-1] != '\n') {
+			
             pos += 8; // length of "#include"
             continue;
         }
