@@ -23,6 +23,7 @@
 #include "tokenize.h"
 #include "astutils.h"
 
+#include <iostream>
 #include <algorithm>
 #include <sstream>
 #include <set>
@@ -2177,7 +2178,6 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope * scope = symbolDatabase->functionScopes[i];
-
         // Search for the "var = realloc(var, 100" pattern within this function
         for (const Token *tok = scope->classStart->next(); tok != scope->classEnd; tok = tok->next()) {
             if (tok->varId() > 0 &&
@@ -2293,9 +2293,12 @@ void CheckMemoryLeakInClass::check()
             if (!var->isStatic() && var->isPointer()) {
                 // allocation but no deallocation of private variables in public function..
                 const Token *tok = var->typeStartToken();
+
                 if (tok->isStandardType()) {
-                    if (var->isPrivate())
+                    if (var->isPrivate()){
+                        
                         checkPublicFunctions(scope, var->nameToken());
+                    }
 
                     variable(scope, var->nameToken());
                 }
@@ -2452,7 +2455,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     // isn't established if there is real leaks or not.
     if (!_settings->isEnabled("warning"))
         return;
-
+    
     const unsigned int varid = classtok->varId();
     if (varid == 0) {
         _tokenizer->getSymbolDatabase()->debugMessage(classtok, "CheckMemoryInClass::checkPublicFunctions found variable \'" + classtok->str() + "\' with varid 0");
@@ -2462,7 +2465,6 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     // Parse public functions..
     // If they allocate member variables, they should also deallocate
     std::list<Function>::const_iterator func;
-
     for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
         if ((func->type == Function::eFunction || func->type == Function::eOperatorEqual) &&
             func->access == Public && func->hasBody()) {
@@ -2473,6 +2475,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
                     publicAllocationError(tok2, tok2->str());
             } else if (Token::Match(tok2, "%type% :: %varid% =", varid) &&
                        tok2->str() == scope->className) {
+                //std::cout << tok2->str() << std::endl;
                 const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(4), varid);
                 if (alloc != CheckMemoryLeak::No)
                     publicAllocationError(tok2, tok2->strAt(2));

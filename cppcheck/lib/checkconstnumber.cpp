@@ -25,9 +25,7 @@ void CheckConstNumber:: constNumber(){
             continue;
         }
         if(Token::Match(tok, "%op%|%comp% %num%")){
-            //std::cout << "Suggest use const variable to replace the const number." <<  std::endl;
-            reportError(tok, Severity::warning, "const number", "Suggest use const variable to replace the const number.");
+            reportError(tok, Severity::warning, "const number", "Suggest using const variable to replace the const number.");
         }
-        
     }
 }
