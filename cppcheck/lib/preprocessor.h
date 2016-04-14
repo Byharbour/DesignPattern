@@ -254,7 +254,7 @@ private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
 
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
-	void Preprocessor::checkCodeBefore(const std::string &code);
+	void checkCodeBefore(const std::string &code);
     /**
      * Search includes from code and append code from the included
      * file

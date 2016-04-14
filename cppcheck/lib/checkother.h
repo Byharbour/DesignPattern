@@ -85,6 +85,8 @@ public:
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
+        checkOther.checkThrowObject();
+        checkOther.checkPrivateRef();
         checkOther.clarifyCalculation();
         checkOther.clarifyStatement();
         checkOther.checkConstantFunctionParameter();
@@ -93,7 +95,7 @@ public:
 
         checkOther.invalidFunctionUsage();
         checkOther.checkMathFunctions();
-
+        
         checkOther.checkMisusedScopedObject();
         checkOther.checkMemsetZeroBytes();
         checkOther.checkMemsetInvalid2ndParam();

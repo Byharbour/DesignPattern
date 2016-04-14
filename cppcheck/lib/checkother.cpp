@@ -27,12 +27,89 @@
 #include <stack>
 #include <algorithm> // find_if()
 //---------------------------------------------------------------------------
-using std::string;
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckOther instance;
 }
 
+void CheckOther:: checkThrowObject() {
+    //遍历所有的token
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next()) {
+        
+        //std::cout << tok->str() << std::endl;
+        //如果匹配到了非引用的catch块
+        if(Token::Match(tok, "catch ( %type% %name% )")){
+            tok = tok->tokAt(3);
+            
+            //如果catch的变量是对象
+            if(tok->variable()->isClass()) {
+                reportError(tok, Severity::error, "1", "Should catch the reference of throwing object.");
+            }
+        }
+        
+        //如果catch的变量是stl的对象
+        if(Token:: Match(tok, "catch ( std :: %type% %name% )")) {
+            reportError(tok, Severity::error, "1", "Should catch the reference of throwing object.");
+        }
+    }
+}
+
+void CheckOther::checkPrivateRef(){
+    const SymbolDatabase *symbolDatabase = _tokenizer->getSymbolDatabase();
+    const int classes = symbolDatabase->classAndStructScopes.size();
+    std::set<std::string> st;
+    
+    //遍历所有的class scope
+    for(int i=0; i<classes; i++){
+        const Scope * scope = symbolDatabase->classAndStructScopes[i];
+        
+        //st用于存放该class中的所有的非公有的成员变量
+        st.clear();
+        
+        //遍历所有的成员变量，如果是非公有的则插入到st中
+        for (auto var = scope->varlist.begin(); var != scope->varlist.end(); var++) {
+            if(!var->isPublic()){
+                st.insert(var->name());
+            }
+        }
+        
+        //list是当前scope中的所有的函数的列表
+        auto list = scope->functionList;
+        
+        //遍历该类中所有的函数
+        for (auto it = list.begin(); it != list.end(); it++) {
+            const Scope * functionScope = it->functionScope;
+            const Function *function = functionScope->function;
+            
+            //如果该函数的返回值类型不是指针或引用则跳过
+            if(!Token::Match(function->retDef, "%type% &|*")){
+                continue;
+            }
+            
+            //def用于存放在该函数中定义的变量
+            std::set<std::string> def;
+            
+            //遍历该函数中所有的token
+            for (const Token *tok = functionScope->classStart->next(); tok; tok = tok->next()) {
+                
+                //如果有新定义的变量，则把该变量名插入到def中
+                if(Token::Match(tok, "%type% %name%") || Token::Match(tok, "%type% *|& %name%")){
+                    def.insert(tok->tokAt(2)->str());
+                }
+                
+                //如果返回值中包含非公有的成员变量，则报错
+                if(Token::Match(tok, "return ")){
+                    for (; tok; tok=tok->next()) {
+                        if(tok->str() == ";") break;
+                        if (st.find(tok->str()) != st.end() && def.find(tok->str()) == def.end()){
+                            reportError(tok, Severity::error, "1", "Don't allow member function to return non-public member variable's pointer or reference.");
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 //----------------------------------------------------------------------------------

@@ -169,17 +169,28 @@ static std::map<std::string,std::string> getcfgmap(const std::string &cfg, const
 }
 void Preprocessor::checkCodeBefore(const std::string &code)
 {
-	std::ostringstream ret;
-	std::istringstream istr(code);
-	std::string line;
-	//removeComments()
-	unsigned int flag = 0;
-	std::getline(istr, line);
-	if (line.compare(0, 9, "#include ") == 0)  //wrong
-	{
-		//error;
-		std::cout << "wrongwrongwrong" << "\n";
-	}
+    bool flag = 0;
+    const int len = std::string("#include").size();
+    for(int i=0; i<code.size(); i++){
+        std::string tmp = code.substr(i, len);
+        if(code[i] == ' ' || code[i] == '\n' || code[i] == '\r') continue;
+        if(code[i] != '#'){
+            flag = i;
+        }
+        if(tmp == "#include"){
+            if(flag){
+                std::cout << "(error) Don't allow code before header." << std::endl;
+                return ;
+            }
+            bool c = 0;
+            for(i = i+len; i<code.size(); i++){
+                if(code[i] == '"' || code[i] == '<') c = 1;
+                else if(c && (code[i] == '"' || code[i] == '>')) {
+                    break;
+                }
+            }
+        }
+    }
 }
 
 
