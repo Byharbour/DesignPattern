@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include "check.h"
+#include <iostream>
 
 class Function;
 class Variable;
@@ -45,11 +46,17 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {
     }
 
+
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
+		checkOther.checkPointmatch();
+		checkOther.checkFreespace();
+		checkOther.checkPointifnull();
+		checkOther.checkVarIfInit();
+		checkOther.checktoint();
         checkOther.warningOldStylePointerCast();
         checkOther.invalidPointerCast();
         checkOther.checkCharVariable();
@@ -229,8 +236,20 @@ public:
     /** @brief %Check for unused labels */
     void checkUnusedLabel();
 
+	
+
 private:
     // Error messages..
+	void checkPointmatch();
+	void checkPointifnull();
+	void checkFreespace();
+	void checkPointmatchError(const Token *tok);
+	void checkFreespaceError(const Token *tok);
+	void checkPointifnullError(const Token *tok);
+	void checktoint();
+	void checktointError(const Token *tok);
+	void checkVarIfInit();
+	void checkVarIfInitError(const Token *tok);
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &strFunctionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
     void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
@@ -341,6 +360,11 @@ private:
         c.ignoredReturnValueError(0, "malloc");
         c.redundantPointerOpError(0, "varname", false);
         c.unusedLabelError(0);
+		c.checkVarIfInitError(0);
+		c.checktointError(0);
+		c.checkPointifnullError(0);
+		c.checkFreespaceError(0);
+		c.checkPointmatchError(0);
     }
 
     static std::string myName() {

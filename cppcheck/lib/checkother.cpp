@@ -27,7 +27,7 @@
 #include <stack>
 #include <algorithm> // find_if()
 //---------------------------------------------------------------------------
-
+using std::string;
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckOther instance;
@@ -2651,3 +2651,235 @@ void CheckOther::unusedLabelError(const Token* tok)
     reportError(tok, Severity::style, "unusedLabel",
                 "Label '" + (tok?tok->str():emptyString) + "' is not used.");
 }
+//std::cout << tok->str() << std::endl;
+/*	if (Token::Match(tok, "%type% %var% ;"))
+{
+s1= tok->next()->str();
+std::cout << s1;
+
+}
+if (Token::Match(tok, "%var% = %num% ;"))
+{
+std::cout << tok->str();
+s2 = tok->str();
+
+if (s1 != s2)
+checkVarIfInitError(tok);
+}
+*/
+void CheckOther::checkVarIfInit()
+{
+	for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+	{
+		
+		if (Token::Match(tok, "%type% %var% ,|;"))
+		{
+		
+
+			if (!(Token::Match(tok->next()->next()->next(), "%var% = %num% ,|;")))
+			{
+				checkVarIfInitError(tok);
+			}
+		}
+	}
+}
+//输出错误信息
+void CheckOther::checkVarIfInitError(const Token *tok)
+{
+   reportError(tok, Severity::style, "uninitialized", "The variable haven't been initialized.");
+}
+
+double deal(string s)
+{
+	int length = sizeof(s);
+	int cnt = 0;
+	double value = 0.0;
+	for (int i = 0; i < length; i++)
+	{
+		if (s[i] != '.')
+		{
+			cnt++;
+		}
+		else break;
+	}
+	
+	for (int i = 0; i < cnt; i++)
+	{
+		value += (s[i]-'0') * pow(10,cnt - i - 1);
+	}
+	//printf("%lf",value);
+	return value;
+}
+void CheckOther::checktoint()
+{
+	for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+	{
+		if (Token::Match(tok, "int|long %var% ;") && (Token::Match(tok->next()->next()->next(), "%var% = %num% ,|;")))
+		{
+			string valuex = tok->next()->next()->next()->next()->next()->str();
+			double Value=deal(valuex);
+			//printf("%.1lf",Value);
+			if (Value > 2147483647.0 || Value < -2147483648.0)
+			{
+				checktointError(tok);
+				//printf("ss");
+			}
+		}
+		if (Token::Match(tok, "long long|__int64 %var% ;") && (Token::Match(tok->next()->next()->next(), "%var% = %num% ,|;")))
+		{
+			
+			string valuex = tok->next()->next()->next()->next()->next()->str();
+			double Value = deal(valuex);
+			if (Value > 9223372036854775807.0 || Value < -9223372036854775808.0)
+				checktointError(tok);
+		}
+		if (Token::Match(tok, "unsigned int|unsigned long %var% ;") && (Token::Match(tok->next()->next()->next(), "%var% = %num% ,|;")))
+		{
+			string valuex = tok->next()->next()->next()->next()->next()->str();
+			double Value = deal(valuex);
+			if (Value > 4294967295.0 || Value < 0.0)
+				checktointError(tok);
+		}
+		if (Token::Match(tok, "unsigned __int64 %var% ;") && (Token::Match(tok->next()->next()->next(), "%var% = %num% ,|;")))
+		{
+			string valuex = tok->next()->next()->next()->next()->next()->str();
+			double Value = deal(valuex);
+			if (Value > 18446744073709551615.0 || Value < 0.0)
+				checktointError(tok);
+		}
+	}
+}
+//输出错误信息
+void CheckOther::checktointError(const Token *tok)
+{
+	reportError(tok, Severity::error, "overflow","There is a error with type conversion");
+}
+
+void CheckOther::checkPointifnull(){
+	std::string;
+	string s1 = "NULL",s2 = "NULL";;
+	int flag = 0,flag1=0;
+	const Token *tok2;
+	for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+	{
+		//std::cout << tok->str() << std::endl;
+
+		if (Token::Match(tok, "%type% * %var%"))
+		{
+			
+			s1 = tok->next()->next()->str();
+			for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+			{
+				if (Token::Match(tok2, "%var%"))
+				{
+					if (tok2->str() == s1)
+						flag1 = 1;
+				}
+			}
+			//std::cout << s1;
+			for (const Token *tok1 = tok; tok1; tok1 = tok1->next()){
+				if (Token::Match(tok1, "if ( 0 ==|!= %var% )")){
+					s2 = tok1->next()->next()->next()->next()->str();
+					//std::cout << s2;
+					break;
+				}
+				if (Token::Match(tok1, "if ( %var% ==|!= 0 )")){
+					s2 = tok1->next()->next()->str();
+				//	std::cout << s2;
+					break;
+				}
+			}
+		}
+	
+		if (s1 != s2)
+		{
+			//checkPointifnullError(tok);
+			flag = 1;
+			tok2 = tok;
+			s1 = "NULL";
+			s2 = "NULL";
+		}
+	}
+	if (flag&&flag1)
+	{
+		checkPointifnullError(tok2);
+	}
+	
+
+}
+
+void CheckOther::checkPointifnullError(const Token *tok){
+	reportError(tok, Severity::style, "judge null", "The point haven't been judged is or not NULL");
+}
+
+void CheckOther::checkFreespace()
+{
+	std::string;
+	string s1,s2;
+	for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+	{
+		//std::cout << tok->str() << std::endl;
+
+		if (Token::Match(tok, "free ( %var% )"))
+		{
+			s1 = tok->next() ->next()->str();
+		//	std::cout << s1 << std::endl;
+			for (const Token *tok1 = tok; tok1; tok1 = tok1->next()){
+				if (Token::Match(tok1, "* %var%"))
+				{
+					s2 = tok1->next()->str();
+					if (s1 == s2)
+					{
+						checkFreespaceError(tok1);
+			
+					}
+					//std::cout << s2 << std::endl;
+					
+				}
+			}
+
+		}
+	}
+}
+//输出错误信息
+void CheckOther::checkFreespaceError(const Token *tok)
+{
+	reportError(tok, Severity::warning, "freespace", "The free space has been used!");
+}
+
+void CheckOther::checkPointmatch()
+{
+	std::string;
+	string s1, s2;
+	for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+	{
+	//	std::cout << tok->str() << std::endl;
+
+		if (Token::Match(tok, "free ( %var% )"))
+		{
+			s1 = tok->next()->next()->str();
+				//std::cout << s1 << std::endl;
+			for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next()){
+				if ((Token::Match(tok1, "%name% ++")) || (Token::Match(tok1, "%name% --")))
+				{
+					s2 = tok1->str();
+					if (s1 == s2)
+					{
+						checkPointmatchError(tok1);
+
+					}
+				//	std::cout << s2 << std::endl;
+				}
+			}
+		}
+	}
+}
+//输出错误信息
+void CheckOther::checkPointmatchError(const Token *tok)
+{
+	reportError(tok, Severity::warning, "freematch", "The point which has been freed must point to the malloc address before!");
+}
+
+
+
+
